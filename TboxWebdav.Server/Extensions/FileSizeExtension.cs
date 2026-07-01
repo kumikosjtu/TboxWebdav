@@ -8,7 +8,7 @@ namespace TboxWebdav.Server.Extensions
 {
     public static class FileSizeExtension
     {
-        public const long ChunkSize = 4 * 1024 * 1024;
+        public const long ChunkSize = 8 * 1024 * 1024;
 
         public static string PrettyPrint(this long value)
         {

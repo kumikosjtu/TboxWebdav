@@ -87,7 +87,7 @@ namespace TboxWebdav.Server.Modules.Tbox
                 MemoryStream ms = new MemoryStream();
                 byte[] buffer = new byte[1024 * 4];
                 int bytesRead = 0;
-                int bytesToRead = (int)(current == count ? length - (current - 1) * 4 * 1024 * 1024 : 4 * 1024 * 1024);
+                int bytesToRead = (int)(current == count ? length - (current - 1) * FileSizeExtension.ChunkSize : FileSizeExtension.ChunkSize);
                 while ((bytesRead = await stream.ReadAsync(buffer, 0, Math.Min(buffer.Length, bytesToRead))) != 0)
                 {
                     ms.Write(buffer, 0, bytesRead);
