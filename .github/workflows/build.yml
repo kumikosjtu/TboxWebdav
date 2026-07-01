@@ -8,6 +8,11 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        rid: [linux-arm64, linux-musl-arm64, linux-x64, linux-musl-x64, osx-x64, osx-arm64, win-x64, win-x86, win-arm64]
+        build_configuration: [Release]
+        deploy_mode: [with-runtime, no-runtime]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -18,8 +23,21 @@ jobs:
         with:
           dotnet-version: 8.0
 
-      - name: Restore
-        run: dotnet restore
+      - name: Build ASP.NET Core App
+        run: |
+          if [ "${{ matrix.deploy_mode }}" == "with-runtime" ]; then
+            dotnet publish -c ${{ matrix.build_configuration }} -r ${{ matrix.rid }} TboxWebdav.Server.AspNetCore/TboxWebdav.Server.AspNetCore.csproj --self-contained
+          else
+            dotnet publish -c ${{ matrix.build_configuration }} -r ${{ matrix.rid }} TboxWebdav.Server.AspNetCore/TboxWebdav.Server.AspNetCore.csproj
+          fi
 
-      - name: Build
-        run: dotnet build --no-restore --configuration Release
+      - name: Pack
+        run: |
+          cd TboxWebdav.Server.AspNetCore/bin/${{ matrix.build_configuration }}/net8.0/${{ matrix.rid }}/publish/
+          zip -r /tmp/TboxWebdav.Server.AspNetCore-${{ matrix.rid }}-${{ matrix.deploy_mode }}.zip .
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: TboxWebdav.Server.AspNetCore-${{ matrix.rid }}-${{ matrix.deploy_mode }}
+          path: /tmp/TboxWebdav.Server.AspNetCore-${{ matrix.rid }}-${{ matrix.deploy_mode }}.zip
